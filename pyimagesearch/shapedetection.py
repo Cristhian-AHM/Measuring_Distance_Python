@@ -11,27 +11,18 @@ class ShapeDetector:
 		peri = cv2.arcLength(c, True)
 		area = cv2.contourArea(c)
 		approx = cv2.approxPolyDP(c, 0.04 * peri, True)
-				# if the shape is a triangle, it will have 3 vertices
+		# Se calculan los vertices y en base a ello se obtiene que figura es.
 		if len(approx) == 3:
 			shape = "Triangulo"
-		# if the shape has 4 vertices, it is either a square or
-		# a rectangle
 		elif len(approx) == 4:
-			# compute the bounding box of the contour and use the
-			# bounding box to compute the aspect ratio
 			(x, y, w, h) = cv2.boundingRect(approx)
 			ar = w / float(h)
  
-			# a square will have an aspect ratio that is approximately
-			# equal to one, otherwise, the shape is a rectangle
 			shape = "Cuadrado" if ar >= 0.95 and ar <= 1.05 else "Rectangulo"
-		# if the shape is a pentagon, it will have 5 vertices
 		elif len(approx) == 5:
 			shape = "Pentagono"
-		# otherwise, we assume the shape is a circle
 		else:
 			shape = "Circulo"
-		# return the name of the shape
 		if area > 210 and area < 1000:
 			status = True
 			color = (0, 255, 0)

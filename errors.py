@@ -7,15 +7,6 @@ import argparse
 import imutils
 import cv2
 
-# Punto medio
-def midpoint(ptA, ptB):
-	return ((ptA[0] + ptB[0]) * 0.5, (ptA[1] + ptB[1]) * 0.5)
-
-# Medidas correctas (Top, Bottom, Mid)
-steps = [6.3, 5.0, 5.4]
-# Umbral
-threshold = 0.5
-
 # Constructor del Argparse
 ap = argparse.ArgumentParser()
 # Se obtiene la dirección de la imagen
@@ -51,6 +42,7 @@ thresh = cv2.adaptiveThreshold(blurred,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,\
            cv2.THRESH_BINARY,11,2)
 # Se muestra la imagen
 cv2.imshow("Imag", thresh)
+cv2.waitKey(0)
 # Se buscan los contornos
 cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL,
 	cv2.CHAIN_APPROX_SIMPLE)
@@ -58,45 +50,35 @@ cnts = imutils.grab_contours(cnts)
 
 sd = ShapeDetector()
 areas = []
-# loop over the contours
+# Se recorren todos los contornos encontrados.
 for c in cnts:
-	# compute the center of the contour, then detect the name of the
-	# shape using only the contour
+	# Se calcula el momento de los contornos.
 	M = cv2.moments(c)
 	cX = int((M["m10"] / M["m00"]) * ratio)
 	cY = int((M["m01"] / M["m00"]) * ratio)
 	shape, color, area, status = sd.detect(c)
 
 	if area > 200:
-		# multiply the contour (x, y)-coordinates by the resize ratio,
-		# then draw the contours and the name of the shape on the image
+		# Dependiendo si el area esta dentro de cierto rango dibujara
+		# el contorno de la figura o un elipse.
 		if status:
+			# Para dibujar el contorno se multiplican los valores de 
+			# X y Y por el ratio en que se redujo la imagen.
 			c = c.astype("float")
 			c *= ratio
 			c = c.astype("int")
 			cv2.drawContours(image, [c], -1, color, 2)
 			areas.append(area)
 		else:
-			"""
-			box = cv2.minAreaRect(c)
-			box = cv2.cv.BoxPoints(box) if imutils.is_cv2() else cv2.boxPoints(box)
-			box = box.astype("float")
-			box *= ratio
-			box = box.astype("int")
-			box = np.array(box, dtype="int")
-			cv2.drawContours(image, [box], -1, color, 2)"""
+			# Para dibujar el elipse se hace de la misma manera salvo
+			# que ahora se descompone el elipse en sus coordenadas y sus
+			# acis para de esta manera multiplicarlos por el ratio.
 			(x, y), (MA, ma), angle = cv2.fitEllipse(c)
 			center = (x * ratio, y * ratio)
 			axes = (MA * ratio, ma * ratio)
 			ellipse = (center, axes, angle)
-			#newEllipse = np.array(ellipse)
-			#newEllipse *= ratio
-			"""ellipse = c.astype("float")
-			ellipse *= ratio
-			ellipse = c.astype("int")"""
-			print(ellipse)
 			cv2.ellipse(image,ellipse,color,3)
-		# show the output image
+		# Se muestra la imagen
 		cv2.imshow("Image", image)
 		cv2.waitKey(0)
 
