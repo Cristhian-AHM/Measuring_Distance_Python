@@ -7,6 +7,16 @@ import argparse
 import imutils
 import cv2
 
+def MapD(value, leftMin, leftMax, rightMin, rightMax):
+    # Figure out how 'wide' each range is
+    leftSpan = leftMax - leftMin
+    rightSpan = rightMax - rightMin
+
+    # Convert the left range into a 0-1 range (float)
+    valueScaled = float(value - leftMin) / float(leftSpan)
+
+    # Convert the 0-1 range into a value in the right range.
+    return rightMin + (valueScaled * rightSpan)
 # Constructor del Argparse
 ap = argparse.ArgumentParser()
 # Se obtiene la dirección de la imagen
@@ -15,6 +25,7 @@ ap.add_argument("-i", "--image", required=True,
 args = vars(ap.parse_args()) 
 # Se carga la imagen
 image = cv2.imread(args["image"])
+print(image.shape)
 resized = imutils.resize(image, width=300)
 ratio = image.shape[0] / float(resized.shape[0])
 
@@ -57,7 +68,6 @@ for c in cnts:
 	cX = int((M["m10"] / M["m00"]) * ratio)
 	cY = int((M["m01"] / M["m00"]) * ratio)
 	shape, color, area, status = sd.detect(c)
-
 	if area > 200:
 		# Dependiendo si el area esta dentro de cierto rango dibujara
 		# el contorno de la figura o un elipse.
@@ -75,12 +85,16 @@ for c in cnts:
 			# acis para de esta manera multiplicarlos por el ratio.
 			(x, y), (MA, ma), angle = cv2.fitEllipse(c)
 			center = (x * ratio, y * ratio)
+			print(center)
+			print(MapD(center[0],0, 720, 0, 5))
 			axes = (MA * ratio, ma * ratio)
 			ellipse = (center, axes, angle)
 			cv2.ellipse(image,ellipse,color,3)
 		# Se muestra la imagen
 		cv2.imshow("Image", image)
 		cv2.waitKey(0)
+
+
 
 totalAreas = np.array(areas)
 print(np.average(totalAreas))

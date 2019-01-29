@@ -12,18 +12,14 @@ class ShapeDetector:
 		area = cv2.contourArea(c)
 		approx = cv2.approxPolyDP(c, 0.04 * peri, True)
 		# Se calculan los vertices y en base a ello se obtiene que figura es.
-		if len(approx) == 3:
-			shape = "Triangulo"
-		elif len(approx) == 4:
+		if len(approx) == 4:
 			(x, y, w, h) = cv2.boundingRect(approx)
 			ar = w / float(h)
  
 			shape = "Cuadrado" if ar >= 0.95 and ar <= 1.05 else "Rectangulo"
 		elif len(approx) == 5:
 			shape = "Pentagono"
-		else:
-			shape = "Circulo"
-		if area > 210 and area < 1000:
+		if area > 210 and area < 1000 and shape == "Cuadrado" or shape == "Rectangulo" or shape == "Pentagono":
 			status = True
 			color = (0, 255, 0)
 		else:

@@ -5,6 +5,8 @@ import numpy as np
 import argparse
 import imutils
 import cv2
+import threading
+import time
 
 """def printit():
   threading.Timer(5.0, printit).start()
@@ -20,7 +22,7 @@ steps = [6.7, 6.7, 6.0]
 threshold = 0.5
 
 #printit()
-cap = cv2.VideoCapture('test11.avi')
+cap = cv2.VideoCapture(0)
 # Constructor del Argparse
 ap = argparse.ArgumentParser()
 # Se obtiene el largo del objeto de referencia
@@ -29,7 +31,7 @@ ap.add_argument("-w", "--width", type=float, required=True,
 
 args = vars(ap.parse_args()) 
 
-while(1):
+while(True):
     # Se toma cada frame de la imagen
     ret, frame = cap.read()
 
@@ -143,8 +145,7 @@ while(1):
                 continue
         # Muestra la imagen final
         cv2.imshow("Result", orig)
-        k = cv2.waitKey(30) & 0xff
-        if k == 27:
-        	break
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
 cap.release()
 cv2.destroyAllWindows()
