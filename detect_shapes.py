@@ -22,7 +22,7 @@ steps = [6.7, 6.7, 6.0]
 threshold = 0.5
 
 #printit()
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
 # Constructor del Argparse
 ap = argparse.ArgumentParser()
 # Se obtiene el largo del objeto de referencia
