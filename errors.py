@@ -17,82 +17,81 @@ def MapD(value, leftMin, leftMax, rightMin, rightMax):
 
     # Convert the 0-1 range into a value in the right range.
     return rightMin + (valueScaled * rightSpan)
+
+cap = cv2.VideoCapture(1)
 # Constructor del Argparse
-ap = argparse.ArgumentParser()
+#ap = argparse.ArgumentParser()
 # Se obtiene la dirección de la imagen
-ap.add_argument("-i", "--image", required=True,
-	help="Direccion de la imagen")
-args = vars(ap.parse_args()) 
+#ap.add_argument("-i", "--image", required=True,
+	#help="Direccion de la imagen")
+#args = vars(ap.parse_args()) 
 # Se carga la imagen
-image = cv2.imread(args["image"])
-print(image.shape)
-resized = imutils.resize(image, width=300)
-ratio = image.shape[0] / float(resized.shape[0])
-
-"""hsv_image = cv2.cvtColor(resized, cv2.COLOR_RGB2HSV)
-h, s, v = cv2.split(hsv_image)
-columns, rows, k = hsv_image.shape
-print(columns)
-print(rows)
-cv2.imshow('Brightness', v)
-#clahe = cv2.createCLAHE(clipLimit=10.0, tileGridSize=(16,16))
-#v = clahe.apply(s)
-
-for x in range(columns):
-	for y in range(rows):
-		if v[x,y] > 240 and v[x,y] < 242:
-			v[x,y] = 0
-
-hsv_image = cv2.merge([h, s, v])
-hsv_image = cv2.cvtColor(hsv_image, cv2.COLOR_HSV2RGB)
-cv2.imshow("HSV Correction", hsv_image)
-cv2.waitKey(0)"""
-gray = cv2.cvtColor(resized, cv2.COLOR_BGR2GRAY)
-blurred = cv2.GaussianBlur(gray, (7, 7), 0)
-thresh = cv2.adaptiveThreshold(blurred,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,\
-           cv2.THRESH_BINARY,11,2)
-# Se muestra la imagen
-cv2.imshow("Imag", thresh)
-cv2.waitKey(0)
-# Se buscan los contornos
-cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL,
-	cv2.CHAIN_APPROX_SIMPLE)
-cnts = imutils.grab_contours(cnts)
-
-sd = ShapeDetector()
-areas = []
-# Se recorren todos los contornos encontrados.
-for c in cnts:
-	# Se calcula el momento de los contornos.
-	M = cv2.moments(c)
-	cX = int((M["m10"] / M["m00"]) * ratio)
-	cY = int((M["m01"] / M["m00"]) * ratio)
-	shape, color, area, status = sd.detect(c)
-	if area > 200:
-		# Dependiendo si el area esta dentro de cierto rango dibujara
-		# el contorno de la figura o un elipse.
-		if status:
-			# Para dibujar el contorno se multiplican los valores de 
-			# X y Y por el ratio en que se redujo la imagen.
-			c = c.astype("float")
-			c *= ratio
-			c = c.astype("int")
-			cv2.drawContours(image, [c], -1, color, 2)
-			areas.append(area)
-		else:
-			# Para dibujar el elipse se hace de la misma manera salvo
-			# que ahora se descompone el elipse en sus coordenadas y sus
-			# acis para de esta manera multiplicarlos por el ratio.
-			(x, y), (MA, ma), angle = cv2.fitEllipse(c)
-			center = (x * ratio, y * ratio)
-			print(center)
-			print(MapD(center[0],0, 720, 0, 5))
-			axes = (MA * ratio, ma * ratio)
-			ellipse = (center, axes, angle)
-			cv2.ellipse(image,ellipse,color,3)
-		# Se muestra la imagen
-		cv2.imshow("Image", image)
-		cv2.waitKey(0)
+ret, frame = cap.read()
+#frame = cv2.imread("test17.jpg")
+while(True):
+    # Se toma cada frame de la imagen
+    cv2.imshow("Image", frame)
+    resized = imutils.resize(frame, width=300)
+    ratio = frame.shape[0] / float(resized.shape[0])
+    gray = cv2.cvtColor(resized, cv2.COLOR_BGR2GRAY)
+    cv2.imshow("Gray", gray)
+    #gray = cv2.equalizeHist(gray)
+    #cv2.imshow("Gray Equalize", gray)
+    #blurred = cv2.GaussianBlur(gray, (7, 7), 0)
+    #cv2.imshow("Blurred", blurred)
+    #thresh = cv2.adaptiveThreshold(blurred,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,\
+	           #cv2.THRESH_BINARY,11,2)
+    ret,thresh = cv2.threshold(gray,75,255,0)
+    #ret,thresh = cv2.threshold(blurred,200,255,cv2.THRESH_BINARY)
+    #ret3,th3 = cv2.threshold(blurred,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+    #cv2.imshow("Blurred", blurred)
+    cv2.imshow("Thresh", thresh)
+    # Se buscan los contorno
+    cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL,
+		cv2.CHAIN_APPROX_SIMPLE)
+    cnts = imutils.grab_contours(cnts)
+    cv2.drawContours(resized, cnts, -1, (0,255,0), 3)
+    cv2.imshow("Image8", resized)
+    cv2.waitKey(0)
+    sd = ShapeDetector()
+    areas = []
+    # Se recorren todos los contornos encontrados.
+    for c in cnts:
+    	# Se calcula el momento de los contornos.
+        M = cv2.moments(c)
+        if int(M["m00"]) == 0:
+            continue
+    	#print(M["mm00"])
+        cX = int((M["m10"] / M["m00"]) * ratio)
+        cY = int((M["m01"] / M["m00"]) * ratio)
+        shape, color, area, status = sd.detect(c)
+        if area > 200:
+    		# Dependiendo si el area esta dentro de cierto rango dibujara
+    		# el contorno de la figura o un elipse.
+            if status:
+    			# Para dibujar el contorno se multiplican los valores de 
+    			# # X y Y por el ratio en que se redujo la imagen.
+                c = c.astype("float")
+                c *= ratio
+                c = c.astype("int")
+                cv2.drawContours(frame, [c], -1, color, 2)
+                areas.append(area)
+            else:
+    			# Para dibujar el elipse se hace de la misma manera salvo
+    			# que ahora se descompone el elipse en sus coordenadas y sus
+    			# acis para de esta manera multiplicarlos por el ratio.
+                (x, y), (MA, ma), angle = cv2.fitEllipse(c)
+                center = (x * ratio, y * ratio)
+                print(center)
+                print(MapD(center[0],0, 720, 0, 5))
+                axes = (MA * ratio, ma * ratio)
+                ellipse = (center, axes, angle)
+                cv2.ellipse(frame,ellipse,color,3)
+    			# Se muestra la imagen
+                cv2.imshow("Image", frame)
+                cv2.waitKey(0)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
 
 
 
