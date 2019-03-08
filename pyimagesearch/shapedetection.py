@@ -8,6 +8,7 @@ class ShapeDetector:
 	# Para intentar hacer detección de figuras se usara aproximación por contornos.
 	def detect(self, c, maxArea, minArea):	
 		shape = "Sin identificar"
+		status = False
 		peri = cv2.arcLength(c, True)
 		area = cv2.contourArea(c)
 		approx = cv2.approxPolyDP(c, 0.04 * peri, True)
@@ -19,10 +20,13 @@ class ShapeDetector:
 			shape = "Cuadrado" if ar >= 0.95 and ar <= 1.05 else "Rectangulo"
 		elif len(approx) == 5:
 			shape = "Pentagono"
-		if area > minArea and area < maxArea and shape == "Cuadrado" or shape == "Rectangulo" or shape == "Pentagono":
-			status = True
+		if area >= minArea and area <= maxArea:
 			color = (0, 255, 0)
+			status = True
 		else:
-			status = False
 			color = (0, 0, 255)
 		return shape, color, area, status
+
+	def detectArea(self, c):	
+		area = cv2.contourArea(c)
+		return area

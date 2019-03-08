@@ -16,22 +16,17 @@ import time
 def midpoint(ptA, ptB):
     return ((ptA[0] + ptB[0]) * 0.5, (ptA[1] + ptB[1]) * 0.5)
 
-# Medidas correctas (Top, Bottom, Mid)
-steps = [6.7, 6.7, 6.0]
-# Umbral
-threshold = 0.5
-
 def sizeMesh(camera, orientation, width, measures, threshold):
     #printit()
     if orientation == "left":
-        file = "left.avi"
+        file = "Malla/images/left.avi"
         method = "left-to-right"
     elif orientation == "right":
-        file = "right.avi"
+        file = "Malla/images/right.avi"
         method = "right-to-left"
     cap = cv2.VideoCapture(file)
 
-    while(True):
+    while(cap.isOpened()):
         # Se toma cada frame de la imagen
         ret, frame = cap.read()
 
@@ -160,4 +155,6 @@ def sizeMesh(camera, orientation, width, measures, threshold):
     cap.release()
     cv2.destroyAllWindows()
 
-sizeMesh(0, "left", 2.0, [6.7,6.7,6.0], 0.5)
+
+
+          
